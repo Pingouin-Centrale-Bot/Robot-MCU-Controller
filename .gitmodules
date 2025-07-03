@@ -1,0 +1,9 @@
+[submodule "components/FastAccelStepper"]
+	path = components/FastAccelStepper
+	url = https://github.com/gin66/FastAccelStepper
+[submodule "components/TM1638plus/TM1638plus"]
+	path = components/TM1638plus/TM1638plus
+	url = https://github.com/gavinlyonsrepo/TM1638plus
+[submodule "components/TMCStepper/TMCStepper"]
+	path = components/TMCStepper/TMCStepper
+	url = https://github.com/teemuatlut/TMCStepper
