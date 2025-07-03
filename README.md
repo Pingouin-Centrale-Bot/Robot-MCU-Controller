@@ -16,18 +16,53 @@ Commencez par installer [Visual Studio Code](https://code.visualstudio.com/Downl
 
 Suivez ensuite les instructions dans la description de l'extension pour installer la version **5.4.2** du SDK (cela peut prendre un moment, et demande environ 4go de mémoire).
 
+Il vous faudra également Git d'installé, pour l'étape suivante.
+
 ## Clonage du repo
 > [!WARNING]
 > Le repo fait usage de "git submodules", il est donc impératif de bien utiliser `--recurse-submodules` lorsque vous clonez le repo si vous ne voulez pas avoir de problèmes par la suite.
 
-Clonez alors ce repo, avec la commande `git clone --recurse-submodules git@github.com:Centrale-Lille-Makers/Robot-MCU-Controller.git`.
+Clonez alors ce repo, dans le dossier que vous désirez avec la commande `git clone --recurse-submodules git@github.com:Centrale-Lille-Makers/Robot-MCU-Controller.git`.
 
-Vous pouvez ensuite ouvrir le dosier dans VSCode.
+Vous pouvez ensuite ouvrir le dossier dans VSCode.
 
 Pour ajouter de nouveaux submodules, adaptez la commande `git submodule add https://github.com/teemuatlut/TMCStepper components/TMCStepper/TMCStepper`.
 
+## Organisation des fichiers
+Le code se situe dans le dossier `main/src/`.
+
+Les librairies permettant d'interfacer avec l'hardware se situent dans le dossier `main/src/libs/` lorsqu'elle sont spécifiques à ce projet, et dans `components/` lorsqu'il s'agit de librairies externes.
+
+Les modules, servant d'abstraction au contrôle de certains aspects du robot, se situent dans le dossier `main/src/modules`.
+
+La configuration des pins, des constantes liées à la géométrie et à l'hardware, ainsi que des paramètres de vitesses du robot se situent dans le fichier `main/src/config.h`.
+
+Le code principal se situe dans le fichier `main/src/main.cpp`.
+
 > [!WARNING]
 > Quand vous rajoutez de nouveaux fichiers, faite un "clean run", car sinon ils ne serons pas vu par CMake !
+
+## Build et flash du robot
+Tout se passe dans la "barre des tâches" de VSCode :
+
+S'assurer que la version **5.4.2** de ESP-IDF est bien sélectionnée (symbole chat-poulpe).
+
+Sélectionner comme méthode de flash "UART" (symbole étoile).
+
+Connecter l'esp32s3 à l'ordinateur via le port usb OTG (le port de droite en regardant la carte du dessus avec les ports en haut).  
+Celui-ci permet de se relier directement à l'interface usb de l'ESP32s3, sans passer par la puce usb-uart, et ainsi libéré le serial0 qui est sinon dédié à la puce usb-uart.
+
+Choisir le port COM de l'ESP32 avec le symbole prise (vous pouvez utiliser le gestionnaire de périphérique ou "device manager" de windows pour le trouver).
+
+Cliquer sur le symbole clé à molette dans la barre des tâches de VSCode pour build le firmware.  
+En cas d'erreurs, nettoyer les fichiers de build (icône en forme de poubelle) et réessayer. Si l'erreur persiste, bon courage.
+
+Cliquer sur le symbole éclair pour flash le firmware.
+
+Cliquer sur le symbole écran pour voir la console de sortie de l'ESP32.
+
+> [!NOTE]
+> Vous pouvez également cliquer sur le symbole feux pour build, flash et monitor en un seul clique
 
 ## Ressources utiles
 
