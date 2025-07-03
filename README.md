@@ -12,15 +12,19 @@ Le code responsable du fonctionnement du robot principal.
 Le SDK espidf, couplé à l'extension ESP-IDF de l'IDE VsCode a été utilisé.
 
 ## Mise en place de l'environnement de développement
-Commencez par installer VSCode, l'extension ESP-IDF, et la bonne version du SDK (actuellement 5.4.1).  
+Commencez par installer [Visual Studio Code](https://code.visualstudio.com/Download) et l'extension [ESP-IDF](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension).
+
+Suivez ensuite les instructions dans la description de l'extension pour installer la version **5.4.2** du SDK (cela peut prendre un moment, et demande environ 4go de mémoire).
 
 ## Clonage du repo
-Clonez alors ce repo, avec la commande `git clone --recurse-submodules git@github.com:behrouze/projet.git`.
-
 > [!WARNING]
 > Le repo fait usage de "git submodules", il est donc impératif de bien utiliser `--recurse-submodules` lorsque vous clonez le repo si vous ne voulez pas avoir de problèmes par la suite.
 
-Pour ajouter des nouveaux submodules, utiliser la commande `git submodule add https://github.com/teemuatlut/TMCStepper components/TMCStepper/TMCStepper` (à bien évidemment adapter).
+Clonez alors ce repo, avec la commande `git clone --recurse-submodules git@github.com:Centrale-Lille-Makers/Robot-MCU-Controller.git`.
+
+Vous pouvez ensuite ouvrir le dosier dans VSCode.
+
+Pour ajouter de nouveaux submodules, adaptez la commande `git submodule add https://github.com/teemuatlut/TMCStepper components/TMCStepper/TMCStepper`.
 
 > [!WARNING]
 > Quand vous rajoutez de nouveaux fichiers, faite un "clean run", car sinon ils ne serons pas vu par CMake !
