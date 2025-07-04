@@ -7,3 +7,6 @@
 [submodule "components/TMCStepper/TMCStepper"]
 	path = components/TMCStepper/TMCStepper
 	url = https://github.com/teemuatlut/TMCStepper
+[submodule "components/LedcStepper"]
+	path = components/LedcStepper
+	url = https://github.com/vale075/LedcStepper

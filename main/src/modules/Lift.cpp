@@ -13,7 +13,7 @@ Lift::Lift(uint8_t step_pin, uint8_t dir_pin, uint8_t en_pin, uint8_t suction_pi
     // driver->rms_current(M_CHARIOT_CURRENT_MA);
     // driver->microsteps(M_CHARIOT_MICROSTEP);
 
-    _stepper = new LedcStepper(step_pin, dir_pin, en_pin, true);
+    _stepper = new LedcStepper(step_pin, dir_pin, en_pin, true, PRIORITY_LIFT_STEPPERS, PRIORITY_LIFT_STOP_ISR);
 
     _suction_pin = (gpio_num_t)suction_pin;
     gpio_reset_pin(_suction_pin);

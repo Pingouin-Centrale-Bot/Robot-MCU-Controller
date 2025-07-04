@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include "driver/gpio.h"
-#include "libs/LedcStepper.h"
+#include "LedcStepper.h"
 #include "IHM.h"
 #include "config.h"
 // #include "TMCStepper.h"

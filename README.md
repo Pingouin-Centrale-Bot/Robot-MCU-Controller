@@ -49,6 +49,8 @@ S'assurer que la version **5.4.2** de ESP-IDF est bien sélectionnée (symbole c
 
 Sélectionner comme méthode de flash "UART" (symbole étoile).
 
+Sélectionner comme microcontrolleur "esp32s3 -> esp32s3 (via built usb-jtag)" (symbole puce). Cela prend un petit moment.
+
 Connecter l'esp32s3 à l'ordinateur via le port usb OTG (le port de droite en regardant la carte du dessus avec les ports en haut).  
 Celui-ci permet de se relier directement à l'interface usb de l'ESP32s3, sans passer par la puce usb-uart, et ainsi libéré le serial0 qui est sinon dédié à la puce usb-uart.
 
