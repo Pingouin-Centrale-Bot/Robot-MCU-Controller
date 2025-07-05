@@ -7,22 +7,26 @@
 static const char *TAG = "Ld19p";
 
 /*
-I was not able to control the speed of the motor, the ld19p won't switch to pwm motor control despite sending it a 30khz pwm signal for 150ms
+I was not able to control the speed of the motor, the ld19p won't switch to pwm motor control despite sending it a 30khz pwm signal for 150ms.
+So I juste gave up. It will automaticely turn at 10Hz, wich is good enough.
 */
 
 #define HEADER 0x54
 #define VERLEN 0x2C
 #define POINT_PER_PACKET 12
 #define PACKET_SIZE 47
-#define MIN_INTERESTED_SIZE ((551 * PACKET_SIZE) / POINT_PER_PACKET) // There are 500 points per revolutions at 10Hz, and each packet of 47 bytes contains 12 points
-#define UART_BUFFER MIN_INTERESTED_SIZE * 2
+#define MIN_INTERESTED_SIZE ((551 * PACKET_SIZE) / POINT_PER_PACKET) // There are 500 points per revolutions at 10Hz, and each packet of 47 bytes contains 12 points. To be safe we look at 1.1 full tours of the LiDAR.
+#define UART_BUFFER MIN_INTERESTED_SIZE * 2 // The uart buffer can hold 2.2 full tours of points.
 
+/**
+ * @brief Task function that periodically calls the partialFlush method to ensure the buffer never gets filled up.
+ */
 void uartPartialFlush(void *pvParameter)
 {
     Ld19p *ld19p = static_cast<Ld19p *>(pvParameter);
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(80));
+        vTaskDelay(pdMS_TO_TICKS(80)); // every .08 seconds, meaning .8 of a full turn of the LiDAR, we get rid of the excess. In theory the buffer should never se more than 1.1+.8=1.9 full tours.
 
         ld19p->partialFlush();
         // ESP_LOGI(TAG, "Flush Task Watermark %d", uxTaskGetStackHighWaterMark(NULL));

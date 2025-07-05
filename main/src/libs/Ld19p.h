@@ -14,13 +14,49 @@ class Ld19p
     friend void uartPartialFlush(void *pvParameter);
 
 public:
+    /**
+     * @brief Constructs an Ld19p object with the specified UART port and RX pin.
+     *
+     * @param uart_num The UART port number to use for communication.
+     * @param rx_pin The GPIO pin number used for UART RX.
+     */
     Ld19p(uart_port_t uart_num, uint8_t rx_pin);
-    int getFullTour(LidarPoint_t points[], int size); // musst be at least 550 in size to be sure to get a full tour.
+    /**
+     * @brief Retrieves a full 360-degree scan (tour) of LIDAR points.
+     *
+     * This function fills the provided array with LIDAR points representing a complete rotation.
+     * The array must have a size of at least 550 to ensure all points in a full tour are captured.
+     *
+     * @param points Array to store the LIDAR points of the full tour.
+     * @param size Size of the points array; must be at least 550.
+     * @return The number of points written to the array, or a negative value on error.
+     */
+    int getFullTour(LidarPoint_t points[], int size); // must be at least 550 in size to be sure to get a full tour.
 
 private:
     uart_port_t _uart_num;
     TaskHandle_t _partial_flush_handle;
+    /**
+     * @brief Partially flushes the UART receive buffer.
+     *
+     * This function checks the current amount of buffered data in the UART receive buffer.
+     * If the buffered data exceeds the minimum interested size (MIN_INTERESTED_SIZE),
+     * it reads and discards the excess bytes, leaving only MIN_INTERESTED_SIZE bytes (or less)
+     * in the buffer. This helps to prevent buffer overflow and ensures that only the most
+     * recent data is retained for further processing.
+     */
     void partialFlush();
+    /**
+     * @brief Calculates the angular step between points in a LiDAR scan packet.
+     *
+     * Given the start and end angles of a scan packet, this function computes the
+     * step size (in hundredths of a degree) between consecutive points, taking into
+     * account the possibility of the angle wrapping around 360 degrees.
+     *
+     * @param start_angle The starting angle of the scan packet (in hundredths of a degree, e.g., 0-35999).
+     * @param end_angle The ending angle of the scan packet (in hundredths of a degree, e.g., 0-35999).
+     * @return The angular step between points (in hundredths of a degree).
+     */
     uint16_t angleStep(uint16_t start_angle, uint16_t end_angle);
     static constexpr uint8_t CRC_TABLE[256] = {
         0x00, 0x4d, 0x9a, 0xd7, 0x79, 0x34, 0xe3,
