@@ -5,7 +5,6 @@
 #include "libs/Ld19p.h"
 #include "config.h"
 #include <cmath>
-#include "esp_log.h"
 #include "Motion.h"
 
 typedef struct

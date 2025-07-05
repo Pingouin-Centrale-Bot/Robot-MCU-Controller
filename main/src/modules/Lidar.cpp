@@ -1,5 +1,6 @@
 #include "Lidar.h"
 
+#include "esp_log.h"
 static const char *TAG = "Lidar";
 
 void detect_task(void *pvParameter)
@@ -7,14 +8,40 @@ void detect_task(void *pvParameter)
     Lidar *lidar = static_cast<Lidar *>(pvParameter);
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(lidar->_DETECT_POLL_DELAY));
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
-        ESP_LOGI(TAG, "Detecting...");
-        if (lidar->detect())
-            lidar->_motion->stop();
-        else
-            lidar->_motion->resume();
-        ESP_LOGI(TAG, "detectTaskWatermark: %d", uxTaskGetStackHighWaterMark(NULL));
+        uint32_t ulNotificationValue;
+        // wait for enable notification
+        ESP_LOGD(TAG, "Waiting for detection enable...");
+        xTaskNotifyWait(0, 0, &ulNotificationValue, portMAX_DELAY);
+        if (ulNotificationValue == 0) {
+            ESP_LOGD(TAG, "Detection was already disabled");
+            continue;
+        }
+        ESP_LOGD(TAG, "Detection enabled");
+
+        while (1)
+        {
+            // Check if we've been told to disable
+            ESP_LOGD(TAG, "Waiting before next detection");
+            if (xTaskNotifyWait(0, 0, &ulNotificationValue, pdMS_TO_TICKS(lidar->_DETECT_POLL_DELAY)) == pdTRUE ) {
+                if (ulNotificationValue == 0)
+                {
+                    ESP_LOGD(TAG, "Detection disabled");
+                    break; // Exit inner loop -> go back to outer wait
+                }
+            }
+
+            // Do detection
+            ESP_LOGD(TAG, "Detecting obstacles...");
+            if (lidar->detect()) {
+                lidar->_motion->stop();
+                ESP_LOGD(TAG, "Obstacle found!");
+            } else {
+                lidar->_motion->resume();
+                ESP_LOGD(TAG, "No obstacle found.");
+            }
+            ESP_LOGD(TAG, "detectTaskWatermark: %d", uxTaskGetStackHighWaterMark(NULL));
+            ESP_LOGD(TAG, "Done detecting obstacles.");
+        }
     }
 }
 
@@ -157,21 +184,21 @@ void Lidar::init_balise_pos(position_t robot_pos, int number_of_attempts_max)
 
 void Lidar::start_detection()
 {
-    xTaskNotifyGive(_detect_task_handle);
+    xTaskNotify(_detect_task_handle, 1, eSetValueWithOverwrite);
     ESP_LOGI(TAG, "Detection started");
 }
 
 void Lidar::stop_detection()
 {
-    xTaskNotifyStateClear(_detect_task_handle);
-    _motion->resume();
+    xTaskNotify(_detect_task_handle, 0, eSetValueWithOverwrite);
+    _motion->resume(); // WARNING : Could create a race condition !
     ESP_LOGI(TAG, "Detection stopped");
 }
 
 #define MIN_CLUSTER_SIZE 2 // taille du cluster de poin minimal pour décréter que c'est un obstacle
 bool Lidar::detect()
 {
-    ESP_LOGI(TAG, "Detecting...");
+    ESP_LOGI(TAG, "Getting points...");
 
     LidarPoint_t points[550];
 
@@ -182,7 +209,7 @@ bool Lidar::detect()
     futur_loc.distance = delta.x;
     futur_loc.angle = (int)(delta.r * 100 + 9000) % 36000;
     ESP_LOGI(TAG, "Current_pos_point distance: %d, angle: %d", futur_loc.distance, futur_loc.angle);
-    if (futur_loc.distance == 0)
+    if (futur_loc.distance == 0) // Not moving, so cannot collide with anything.
         return false;
     int nb_pt = _ld19p->getFullTour(points, 550);
 
