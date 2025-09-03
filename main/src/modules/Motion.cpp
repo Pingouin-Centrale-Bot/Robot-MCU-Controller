@@ -1,28 +1,29 @@
 #include "Motion.h"
 #include "config.h"
 #include "Lidar.h"
+#include <TMCStepper.h>
 
 static const char *TAG = "motion";
 
 Motion::Motion()
 {
-    // M1_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M1_DRIVER_ADDRESS);
-    // M2_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M2_DRIVER_ADDRESS);
-    // M3_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M3_DRIVER_ADDRESS);
-    // M4_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M4_DRIVER_ADDRESS);
+    M1_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M1_DRIVER_ADDRESS);
+    M2_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M2_DRIVER_ADDRESS);
+    M3_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M3_DRIVER_ADDRESS);
+    M4_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M4_DRIVER_ADDRESS);
 
-    // M1_driver->begin();
-    // M2_driver->begin();
-    // M3_driver->begin();
-    // M4_driver->begin();
+    M1_driver->begin();
+    M2_driver->begin();
+    M3_driver->begin();
+    M4_driver->begin();
 
-    // M1_driver->toff(5);
-    // M2_driver->toff(5);
-    // M3_driver->toff(5);
-    // M4_driver->toff(5);
+    M1_driver->toff(5);
+    M2_driver->toff(5);
+    M3_driver->toff(5);
+    M4_driver->toff(5);
 
-    // set_RMS(M_DRIVE_CURRENT_MA);
-    // set_microstep(M_DRIVE_MICROSTEP);
+    set_RMS(M_DRIVE_CURRENT_MA);
+    set_microstep(M_DRIVE_MICROSTEP);
 
     _stepper_engine.init();
     _M1_stepper = _stepper_engine.stepperConnectToPin(M1_STP_PIN);
@@ -298,21 +299,21 @@ bool Motion::is_running()
     return _stopped || _M1_stepper->isRunning() || _M2_stepper->isRunning() || _M3_stepper->isRunning() || _M4_stepper->isRunning();
 }
 
-// void Motion::set_RMS(uint16_t current)
-// {
-//     M1_driver->rms_current(current);
-//     M2_driver->rms_current(current);
-//     M3_driver->rms_current(current);
-//     M4_driver->rms_current(current);
-// }
+void Motion::set_RMS(uint16_t current)
+{
+    M1_driver->rms_current(current);
+    M2_driver->rms_current(current);
+    M3_driver->rms_current(current);
+    M4_driver->rms_current(current);
+}
 
-// void Motion::set_microstep(uint16_t ms)
-// {
-//     M1_driver->microsteps(ms);
-//     M2_driver->microsteps(ms);
-//     M3_driver->microsteps(ms);
-//     M4_driver->microsteps(ms);
-// }
+void Motion::set_microstep(uint16_t ms)
+{
+    M1_driver->microsteps(ms);
+    M2_driver->microsteps(ms);
+    M3_driver->microsteps(ms);
+    M4_driver->microsteps(ms);
+}
 
 void Motion::translate(int distance, double alpha, int speed_robot, int accel_robot, bool blocking)
 {

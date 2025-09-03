@@ -1,6 +1,6 @@
 #pragma once
 
-// #include "TMCStepper.h"
+#include <TMCStepper.h>
 #include "FastAccelStepper.h"
 #include "IHM.h"
 #include "config.h"
@@ -38,10 +38,10 @@ public:
     position_t relative_pos_futur(); // returns the position in 1sec if stop was issued now
 
 private:
-    // TMC2209Stepper *M1_driver;
-    // TMC2209Stepper *M2_driver;
-    // TMC2209Stepper *M3_driver;
-    // TMC2209Stepper *M4_driver;
+    TMC2209Stepper *M1_driver;
+    TMC2209Stepper *M2_driver;
+    TMC2209Stepper *M3_driver;
+    TMC2209Stepper *M4_driver;
 
     FastAccelStepperEngine _stepper_engine = FastAccelStepperEngine();
     void execute_moves(double c1, double c2, double c3, double c4, int pos, int speed, int accel, bool blocking = true);
@@ -57,8 +57,8 @@ private:
 
     gpio_num_t _en_pin;
 
-    // void set_RMS(uint16_t current);
-    // void set_microstep(uint16_t ms);
+    void set_RMS(uint16_t current);
+    void set_microstep(uint16_t ms);
     position_t _objective_pos = {0, 0, 0};
     void update_pos();
     position_t get_pos_delta(uint8_t type = 0);

@@ -6,7 +6,6 @@
 #include "Arduino.h"
 #include "driver/gpio.h"
 
-// #include "module/motion.h"
 #include "modules/IHM.h"
 #include "modules/Lift.h"
 #include "modules/Motion.h"
@@ -36,17 +35,17 @@ void setup()
     ESP_LOGI(TAG, "START");
 
     // Initializing UART coms for steppers
-    // M_DRIVE_SERIAL.begin(115200, SERIAL_8N1, M_DRIVE_RX, M_DRIVE_TX);
-    // M_CHARIOT_SERIAL.begin(115200, SERIAL_8N1, M_CHARIOT_RX, M_CHARIOT_TX);
-    // vTaskDelay(pdMS_TO_TICKS(100)); // for the UART com to settle (not proved to be usefull, but if it aint brock dont fix it)
-    gpio_reset_pin((gpio_num_t)M_CHARIOT_RX);
-    gpio_set_direction((gpio_num_t)M_CHARIOT_RX, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)M_CHARIOT_RX, 0);
-    gpio_reset_pin((gpio_num_t)M_CHARIOT_TX);
-    gpio_set_direction((gpio_num_t)M_CHARIOT_TX, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)M_CHARIOT_TX, 0);
+    M_DRIVE_SERIAL.begin(115200, SERIAL_8N1, M_DRIVE_RX, M_DRIVE_TX);
+    M_CHARIOT_SERIAL.begin(115200, SERIAL_8N1, M_CHARIOT_RX, M_CHARIOT_TX);
+    vTaskDelay(pdMS_TO_TICKS(100)); // for the UART com to settle (not proved to be usefull, but if it aint brock dont fix it)
+    // gpio_reset_pin((gpio_num_t)M_CHARIOT_RX);
+    // gpio_set_direction((gpio_num_t)M_CHARIOT_RX, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)M_CHARIOT_RX, 0);
+    // gpio_reset_pin((gpio_num_t)M_CHARIOT_TX);
+    // gpio_set_direction((gpio_num_t)M_CHARIOT_TX, GPIO_MODE_OUTPUT);
+    // gpio_set_level((gpio_num_t)M_CHARIOT_TX, 0);
 
-    // ESP_LOGI(TAG, "Motor serial initialized");
+    ESP_LOGI(TAG, "Motor serial initialized");
 
     motion = new Motion();
     ESP_LOGI(TAG, "Motion initialized");
