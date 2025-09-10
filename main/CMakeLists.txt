@@ -1,4 +1,4 @@
-idf_component_register(SRC_DIRS "src" "src/libs" "src/modules"
+idf_component_register(SRC_DIRS "src" "src/libs" "src/modules" "src/programs"
                     INCLUDE_DIRS "src")
 
 set(COMPONENT_REQUIRES "TMCStepper")
