@@ -10,6 +10,7 @@
 #include "modules/Lift.h"
 #include "modules/Motion.h"
 #include "modules/Lidar.h"
+#include "modules/RemoteControl.h"
 #include "config.h"
 #include "programs/Program1.h"
 #include "programs/Program2.h"
@@ -29,6 +30,7 @@ Lift *liftG = NULL;
 Lift *liftD = NULL;
 IHM *ihm = NULL;
 Lidar *lidar = NULL;
+RemoteControl *rc = NULL;
 
 void setup()
 {
@@ -40,10 +42,22 @@ extern "C" void app_main(void)
     initArduino();
     setup();
 
+    // // temp
+    // rc = new RemoteControl(motion, liftG, liftD);
+    // rc->start();
+    // ESP_LOGI(TAG, "Exited !");
+    
+    // while (1)
+    // {
+    //     vTaskDelay(pdMS_TO_TICKS(5000));
+    //     ESP_LOGI(TAG, "Ping");
+    // }
+    // // endtemp
+
     ihm->set_LED(0, 1);
-    //liftG->calibrate(ihm); temp for SC4
+    liftG->calibrate(ihm);
     ihm->set_LED(1, 1);
-    //liftD->calibrate(ihm); temp for SC4
+    liftD->calibrate(ihm);
     ihm->set_LED(2, 1);
     motion->calibrate(ihm);
     ihm->set_LED(3, 1);
@@ -171,7 +185,7 @@ extern "C" void app_main(void)
 void waitTiretteAndStart()
 {
     ihm->write_msg("Ready   ");
-    lidar->start_detection();
+    //lidar->start_detection(); temp
     gpio_reset_pin((gpio_num_t)TIRETTE_PIN);
     gpio_set_direction((gpio_num_t)TIRETTE_PIN, GPIO_MODE_INPUT);
     while (!gpio_get_level((gpio_num_t)TIRETTE_PIN))
