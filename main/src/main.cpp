@@ -11,6 +11,7 @@
 #include "modules/Motion.h"
 #include "modules/Lidar.h"
 #include "modules/RemoteControl.h"
+#include "modules/RemoteControl.h"
 #include "config.h"
 #include "programs/Program1.h"
 #include "programs/Program2.h"
@@ -30,6 +31,7 @@ Lift *liftG = NULL;
 Lift *liftD = NULL;
 IHM *ihm = NULL;
 Lidar *lidar = NULL;
+RemoteControl *rc = NULL;
 RemoteControl *rc = NULL;
 
 void setup()
@@ -56,7 +58,9 @@ extern "C" void app_main(void)
 
     ihm->set_LED(0, 1);
     liftG->calibrate(ihm);
+    liftG->calibrate(ihm);
     ihm->set_LED(1, 1);
+    liftD->calibrate(ihm);
     liftD->calibrate(ihm);
     ihm->set_LED(2, 1);
     motion->calibrate(ihm);
