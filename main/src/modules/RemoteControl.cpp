@@ -125,7 +125,7 @@ void RemoteControl::platform_controller_data(uni_hid_device_t *d, uni_controller
 
     gp = &ctl->gamepad;
     ESP_LOGI(TAG, "btns: %d; ax_x: %" PRId32 "; ax_y: %" PRId32 "; brake: %" PRId32 "; throttle: %" PRId32 ";", gp->buttons, gp->axis_x, gp->axis_y, gp->brake, gp->throttle);
-    
+
     // lift right controls
     if ((gp->buttons & BUTTON_B) && !(prev.gamepad.buttons & BUTTON_B)) // btn_b just got pressed
     {
@@ -177,7 +177,7 @@ void RemoteControl::platform_controller_data(uni_hid_device_t *d, uni_controller
             _lift_right->stop_motor();
         }
     }
-    
+
     // lift left controls
     if ((gp->buttons & BUTTON_X) && !(prev.gamepad.buttons & BUTTON_X)) // btn_x just got pressed
     {

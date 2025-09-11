@@ -10,13 +10,12 @@
 #include "modules/Lift.h"
 #include "modules/Motion.h"
 #include "modules/Lidar.h"
-#include "modules/RemoteControl.h"
-#include "modules/RemoteControl.h"
 #include "config.h"
 #include "programs/Program1.h"
 #include "programs/Program2.h"
 #include "programs/Program3.h"
 #include "programs/Program4.h"
+#include "programs/ProgramRemoteControl.h"
 #include "init_robot.h"
 
 static const char *TAG = "main";
@@ -31,8 +30,6 @@ Lift *liftG = NULL;
 Lift *liftD = NULL;
 IHM *ihm = NULL;
 Lidar *lidar = NULL;
-RemoteControl *rc = NULL;
-RemoteControl *rc = NULL;
 
 void setup()
 {
@@ -44,23 +41,9 @@ extern "C" void app_main(void)
     initArduino();
     setup();
 
-    // // temp
-    // rc = new RemoteControl(motion, liftG, liftD);
-    // rc->start();
-    // ESP_LOGI(TAG, "Exited !");
-    
-    // while (1)
-    // {
-    //     vTaskDelay(pdMS_TO_TICKS(5000));
-    //     ESP_LOGI(TAG, "Ping");
-    // }
-    // // endtemp
-
     ihm->set_LED(0, 1);
     liftG->calibrate(ihm);
-    liftG->calibrate(ihm);
     ihm->set_LED(1, 1);
-    liftD->calibrate(ihm);
     liftD->calibrate(ihm);
     ihm->set_LED(2, 1);
     motion->calibrate(ihm);
@@ -77,6 +60,7 @@ extern "C" void app_main(void)
             case 1: currentProgram = new Program2(motion, liftG, liftD, ihm, lidar); break;
             case 2: currentProgram = new Program3(motion, liftG, liftD, ihm, lidar); break;
             case 3: currentProgram = new Program4(motion, liftG, liftD, ihm, lidar); break;
+            case 7: currentProgram = new ProgramRemoteControl(motion, liftG, liftD, ihm, lidar); break;
             default: 
                 ihm->write_msg("Vide");
                 vTaskDelay(pdMS_TO_TICKS(1000));
@@ -91,93 +75,6 @@ extern "C" void app_main(void)
         delete currentProgram;
     }
 
-
-    // switch (btns)
-    // {
-    //     case 5:
-    //     liftD->go_to(150 - LIFT_0, false);
-    //     motion->translate(350, 90, 200, 100, true);
-    //     motion->translate(365, 0, 200, 100, true);
-    //     motion->translate(355, 270, 60, 40, true);
-    //     ihm->show_score(4);
-    //     motion->translate(405, 90, 200, 100, true);
-    //     motion->translate(200, 0, 200, 100, true);
-    //     motion->translate(700, 90, 200, 100, true);
-    //     motion->translate(500, 180, 200, 100, true);
-    //     motion->translate(1050, 263, 60, 40, true);
-    //     ihm->show_score(8);
-    //     motion->translate(200, 90, 200, 100, true);
-    //     motion->translate(850, 0, 200, 100, true);
-    //     motion->translate(1000, 90, 200, 100, true);
-    //     ihm->show_score(18);
-
-    //     break;
-    // // case 5:
-    // //     liftD->enable_magnets();
-    // //     liftG->enable_magnets();
-    // //     for (int i = 0; i < 10; i++)
-    // //     {
-
-    // //         liftD->go_to(130-LIFT_0); // En bas
-    // //         liftG->go_to(130-LIFT_0); // En bas
-    // //         vTaskDelay(pdMS_TO_TICKS(5000));
-    // //         liftD->go_to(150-LIFT_0); // En bas
-    // //         liftG->go_to(150-LIFT_0); // En bas
-    // //         vTaskDelay(pdMS_TO_TICKS(5000));
-    // //     }
-    // //     liftD->disable_magnets();
-    // //     liftG->disable_magnets();
-
-    // //     break;
-    // case 6:
-    //     liftD->go_to(155 - LIFT_0, false);
-    //     motion->translate(350, 90, 200, 100, true);
-    //     motion->translate(365, 0, 200, 100, true);
-    //     motion->translate(355, 270, 60, 40, true);
-    //     ihm->show_score(4);
-    //     motion->translate(405, 90, 200, 100, true);
-    //     motion->translate(400, 65, 200, 100, true);
-    //     motion->rotate(720, 75, 50);
-    //     motion->rotate(-720, 75, 50);
-    //     motion->translate(650, 65, 200, 100, true);
-    //     ihm->show_score(14);
-    //     break;
-    // case 7:
-    //     liftD->go_to(155 - LIFT_0, false);
-    //     motion->translate(350, 90, 200, 100, true);
-    //     motion->translate(365, 180, 200, 100, true);
-    //     motion->translate(355, 270, 60, 40, true);
-    //     ihm->show_score(4);
-    //     motion->translate(405, 90, 200, 100, true);
-    //     motion->translate(400, 115, 200, 100, true);
-    //     motion->rotate(-720, 75, 50);
-    //     motion->rotate(720, 75, 50);
-    //     motion->translate(650, 115, 200, 100, true);
-    //     ihm->show_score(14);
-    //     break;
-    // default:
-    //     break;
-    // }
-
-    // while (1) {
-    //     liftD->go_to(80, false);
-    //     liftG->go_to(80);
-    //     liftD->wait();
-    //     vTaskDelay(pdMS_TO_TICKS(1000));
-    //     liftD->disable_suction();
-    //     liftD->disable_magnets();
-    //     liftG->disable_suction();
-    //     liftG->disable_magnets();
-
-    //     liftD->go_to(10, false);
-    //     liftG->go_to(40);
-    //     liftG->enable_suction();
-    //     liftG->enable_magnets();
-    //     liftD->wait();
-    //     liftD->enable_suction();
-    //     liftD->enable_magnets();
-    //     vTaskDelay(pdMS_TO_TICKS(1000));
-    // }
     freeRobot(motion, liftG, liftD, ihm, lidar);
 
     ESP_LOGI(TAG, "Done");
@@ -215,13 +112,9 @@ int select_program()
     ihm->write_msg("Prog.    ");
     uint8_t btns = ihm->wait_get_buttons();
 
-    int prognum = 0;
-    while ((btns & 1) == 0)
-    {
-        btns >>= 1;
-        ++prognum;
-    }
+    int prognum = __builtin_ctz(btns); // count trailing zeroes
     ihm->show_score(prognum);
     ihm->write_msg("Sel");
+    vTaskDelay(pdMS_TO_TICKS(500));
     return prognum;
 }
