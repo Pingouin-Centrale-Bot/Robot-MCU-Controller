@@ -10,6 +10,7 @@
 #include "modules/Lift.h"
 #include "modules/Motion.h"
 #include "modules/Lidar.h"
+#include "modules/RemoteControl.h"
 #include "config.h"
 
 static const char *TAG = "main";
@@ -29,6 +30,7 @@ Lift *liftG = NULL;
 Lift *liftD = NULL;
 IHM *ihm = NULL;
 Lidar *lidar = NULL;
+RemoteControl *rc = NULL;
 
 void setup()
 {
@@ -53,10 +55,22 @@ extern "C" void app_main(void)
     initArduino();
     setup();
 
+    // // temp
+    // rc = new RemoteControl(motion, liftG, liftD);
+    // rc->start();
+    // ESP_LOGI(TAG, "Exited !");
+    
+    // while (1)
+    // {
+    //     vTaskDelay(pdMS_TO_TICKS(5000));
+    //     ESP_LOGI(TAG, "Ping");
+    // }
+    // // endtemp
+
     ihm->set_LED(0, 1);
-    //liftG->calibrate(ihm); temp for SC4
+    liftG->calibrate(ihm);
     ihm->set_LED(1, 1);
-    //liftD->calibrate(ihm); temp for SC4
+    liftD->calibrate(ihm);
     ihm->set_LED(2, 1);
     motion->calibrate(ihm);
     ihm->set_LED(3, 1);
@@ -80,7 +94,6 @@ extern "C" void app_main(void)
         //calibrage(); temp for SC4
         break;
     case 1:
-        calibrage();
         break;
     case 2:
         calibrage();
@@ -104,14 +117,20 @@ extern "C" void app_main(void)
         motion->translate(650, 90, 200, 100, true);
         while (true) {
             vTaskDelay(pdMS_TO_TICKS(1000));
-            liftG->enable_suction();
-            liftG->enable_magnets();
-            vTaskDelay(pdMS_TO_TICKS(5000));
+            //liftG->enable_suction();
+            //liftG->enable_magnets();
+            liftD->go_to(160, false);
+            liftG->go_to(160);
+            liftD->wait();
+            vTaskDelay(pdMS_TO_TICKS(1000));
             motion->rotate(180, 75, 50);
             motion->translate(650, 90, 200, 100, true);
             vTaskDelay(pdMS_TO_TICKS(1000));
-            liftG->disable_magnets();
-            liftG->disable_suction();
+            liftG->go_to(10, false);
+            liftD->go_to(10);
+            liftG->wait();
+            //liftG->disable_magnets();
+            //liftG->disable_suction();
             vTaskDelay(pdMS_TO_TICKS(2000));
             motion->translate(100, 270, 200, 100, true);
             motion->rotate(-90-45, 75, 50);
@@ -170,34 +189,9 @@ extern "C" void app_main(void)
         liftD->disable_suction();
         break;
     case 1:
-        // liftG->go_to(145-LIFT_0); // Lever large
-        // motion->translate(450, 90, 200, 200, true);
-        // liftG->go_to(130-LIFT_0); // Contact ventouse
-        // motion->translate(50, 0, 200, 200, true);
-        // motion->translate(70, 90, 30, 30, true); // Collage robot
-        // liftG->enable_suction();
-        // vTaskDelay(pdMS_TO_TICKS(500));
-        // liftG->go_to(142-LIFT_0); // Lever planche
-        // motion->translate(20, 270, 200, 100, true); // S''eloigner un peu
-        // liftG->go_to(170-LIFT_0); // Lever planche
-        // motion->translate(80, 270, 200, 100, true); // S''eloigner
-        // motion->rotate(180, 150, 150); // rotation
-
-        liftG->go_to(145 - LIFT_0, false); // Lever large
-        motion->translate(450, 90, 200, 200, true);
-        liftG->wait();
-        motion->translate(50, 0, 200, 200, true);
-        motion->translate(70, 90, 30, 30, true); // Collage robot
-        liftG->go_to(135 - LIFT_0);              // Contact ventouse
-        liftG->enable_suction();
-        vTaskDelay(pdMS_TO_TICKS(500));
-        liftG->go_to(142 - LIFT_0);                 // Lever planche
-        motion->translate(20, 270, 200, 100, true); // S''eloigner un peu
-        liftG->go_to(170 - LIFT_0, false);          // Lever planche
-        motion->translate(80, 270, 200, 100, true); // S''eloigner
-        motion->rotate(180, 150, 150);              // rotation
-
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        rc = new RemoteControl(motion, liftG, liftD);
+        rc->start();
+        ESP_LOGI(TAG, "Exited !");
         break;
     case 2:
         motion->translate(450, 90, 200, 200, true);
@@ -345,7 +339,7 @@ extern "C" void app_main(void)
 void waitTiretteAndStart()
 {
     ihm->write_msg("Ready   ");
-    lidar->start_detection();
+    //lidar->start_detection(); temp
     gpio_reset_pin((gpio_num_t)TIRETTE_PIN);
     gpio_set_direction((gpio_num_t)TIRETTE_PIN, GPIO_MODE_INPUT);
     while (!gpio_get_level((gpio_num_t)TIRETTE_PIN))
