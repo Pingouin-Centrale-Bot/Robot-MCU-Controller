@@ -33,6 +33,7 @@ public:
     void correct_pos(position_t relative_pos_error);
     void set_pos(position_t absolute_pos);
     void translate(int distance, double alpha, int speed_robot = MAX_SPEED_ROBOT, int accel_robot = MAX_ACCEL_ROBOT, bool blocking = true);
+    void translate_velocity(double alpha, int speed_robot, int accel_robot = MAX_ACCEL_ROBOT);
     void rotate(double dtheta, int rotation_speed_robot = MAX_SPEED_ROBOT, int rotation_accel_robot = MAX_ACCEL_ROBOT, bool blocking = true);
     void wait();
     position_t relative_pos_futur(); // returns the position in 1sec if stop was issued now
@@ -45,13 +46,17 @@ private:
 
     FastAccelStepperEngine _stepper_engine = FastAccelStepperEngine();
     void execute_moves(double c1, double c2, double c3, double c4, int pos, int speed, int accel, bool blocking = true);
+    void execute_speed(double c1, double c2, double c3, double c4, int speed, int accel);
     void execute_steps();
+    void runSpeedInHz(int32_t speed_in_Hz, FastAccelStepper *stepper);
     FastAccelStepper *_M1_stepper = NULL;
     FastAccelStepper *_M2_stepper = NULL;
     FastAccelStepper *_M3_stepper = NULL;
     FastAccelStepper *_M4_stepper = NULL;
 
     stepInstruction_t _current_objective[4];
+    stepInstruction_t _speed_objective[4];
+
     position_t _pos;     // position that was *last time the steps were reset*
     bool _moved = false; // if a move was made, meaning pos is not updated anymore.
 

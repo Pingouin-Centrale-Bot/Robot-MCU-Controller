@@ -128,6 +128,63 @@ void Motion::set_pos(position_t absolute_pos)
     _pos = absolute_pos;
 }
 
+void Motion::runSpeedInHz(int32_t speed_in_Hz, FastAccelStepper *stepper) {
+    if (speed_in_Hz == 0) {
+         stepper->stopMove();
+    }
+    else {
+         if (speed_in_Hz > 0) {
+              stepper->setSpeedInHz(speed_in_Hz);
+              stepper->runForward();
+         }
+         else {
+              stepper->setSpeedInHz(-speed_in_Hz);
+              stepper->runBackward();
+         }
+    }
+}
+
+void Motion::execute_speed(double c1, double c2, double c3, double c4, int speed, int accel) {
+    xSemaphoreTake(_stepping_mutex, portMAX_DELAY);
+
+    _current_objective[0].speed = fabs(c1) * speed * M1_MICROSTEP;
+    _current_objective[1].speed = fabs(c2) * speed * M2_MICROSTEP;
+    _current_objective[2].speed = fabs(c3) * speed * M3_MICROSTEP;
+    _current_objective[3].speed = fabs(c4) * speed * M4_MICROSTEP;
+
+    _current_objective[0].accel = fabs(c1) * accel * M1_MICROSTEP;
+    _current_objective[1].accel = fabs(c2) * accel * M2_MICROSTEP;
+    _current_objective[2].accel = fabs(c3) * accel * M3_MICROSTEP;
+    _current_objective[3].accel = fabs(c4) * accel * M4_MICROSTEP;
+
+    _current_objective[0].jerk = fabs(c1) * M1_MICROSTEP;
+    _current_objective[1].jerk = fabs(c2) * M2_MICROSTEP;
+    _current_objective[2].jerk = fabs(c3) * M3_MICROSTEP;
+    _current_objective[3].jerk = fabs(c4) * M4_MICROSTEP;
+
+    
+    // ESP_LOGI(TAG, "Executing steps");
+    // ESP_LOGI(TAG, "Stepper 1: steps: %d, speed: %d, accel: %d, liear_accel: %d", (int)_current_objective[0].steps, (int)_current_objective[0].speed, (int)_current_objective[0].accel, (int)_current_objective[0].jerk);
+    _M1_stepper->setAcceleration(_current_objective[0].accel);
+    _M2_stepper->setAcceleration(_current_objective[1].accel);
+    _M3_stepper->setAcceleration(_current_objective[2].accel);
+    _M4_stepper->setAcceleration(_current_objective[3].accel);
+    _M1_stepper->setLinearAcceleration(_current_objective[0].jerk);
+    _M2_stepper->setLinearAcceleration(_current_objective[1].jerk);
+    _M3_stepper->setLinearAcceleration(_current_objective[2].jerk);
+    _M4_stepper->setLinearAcceleration(_current_objective[3].jerk);
+    
+    UBaseType_t prvPriority = uxTaskPriorityGet(NULL);
+    vTaskPrioritySet(NULL, PRIORITY_SYNC_MOTORS);
+    _moved = true;
+    runSpeedInHz(_current_objective[0].speed, _M1_stepper);
+    runSpeedInHz(_current_objective[1].speed, _M2_stepper);
+    runSpeedInHz(_current_objective[2].speed, _M3_stepper);
+    runSpeedInHz(_current_objective[3].speed, _M4_stepper);
+    vTaskPrioritySet(NULL, prvPriority);
+    xSemaphoreGive(_stepping_mutex);
+}
+
 void Motion::execute_moves(double c1, double c2, double c3, double c4, int steps, int speed, int accel, bool blocking) // absolue
 {
     ESP_LOGI(TAG, "Executing moves");
@@ -350,6 +407,20 @@ void Motion::translate(int distance, double alpha, int speed_robot, int accel_ro
     execute_moves(c1, c2, c3, c4, dist_robot_step, speed_robot_step, accel_robot_step, blocking);
 }
 
+void Motion::translate_velocity(double alpha, int speed_robot, int accel_robot)
+{
+    ESP_LOGI(TAG, "Translate - speed: %d, alpha: %f", speed_robot, alpha);
+    double A = M_DRIVE_STEPS_PER_TURN / (2 * PI * WHEEL_RADIUS) * ODOM_CORRECTION_TRANSLATION;
+    int speed_robot_step = (int)speed_robot * A;
+    int accel_robot_step = (int)accel_robot * A;
+    double a = cos(alpha * PI / 180) * 0.70710678;
+    double b = sin(alpha * PI / 180) * 0.70710678;
+    double c1 = -a + b;
+    double c2 = -a - b;
+    double c3 = +a - b;
+    double c4 = +a + b;
+    execute_speed(c1, c2, c3, c4, speed_robot_step, accel_robot_step);
+}
 void Motion::rotate(double dtheta, int rotation_speed_robot, int rotation_accel_robot, bool blocking)
 {
     ESP_LOGE(TAG, "Rotating - dtheta: %f", dtheta);
