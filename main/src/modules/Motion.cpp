@@ -1,29 +1,42 @@
 #include "Motion.h"
 #include "config.h"
 #include "Lidar.h"
-#include <TMCStepper.h>
 
 static const char *TAG = "motion";
 
 Motion::Motion()
 {
-    M1_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M1_DRIVER_ADDRESS);
-    M2_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M2_DRIVER_ADDRESS);
-    M3_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M3_DRIVER_ADDRESS);
-    M4_driver = new TMC2209Stepper(&M_DRIVE_SERIAL, M_R_SENSE, M4_DRIVER_ADDRESS);
+    M1_driver = new TMC2209();
+    M2_driver = new TMC2209();
+    M3_driver = new TMC2209();
+    M4_driver = new TMC2209();
 
-    M1_driver->begin();
-    M2_driver->begin();
-    M3_driver->begin();
-    M4_driver->begin();
+    M1_driver->setup(M_DRIVE_SERIAL, 115200, M1_DRIVER_ADDRESS, M_DRIVE_RX, M_DRIVE_TX);
+    M1_driver->setReplyDelay(4);
+    M2_driver->setup(M_DRIVE_SERIAL, 115200, M2_DRIVER_ADDRESS, M_DRIVE_RX, M_DRIVE_TX);
+    M2_driver->setReplyDelay(4);
+    M3_driver->setup(M_DRIVE_SERIAL, 115200, M3_DRIVER_ADDRESS, M_DRIVE_RX, M_DRIVE_TX);
+    M3_driver->setReplyDelay(4);
+    M4_driver->setup(M_DRIVE_SERIAL, 115200, M4_DRIVER_ADDRESS, M_DRIVE_RX, M_DRIVE_TX);
+    M4_driver->setReplyDelay(4);
 
-    M1_driver->toff(5);
-    M2_driver->toff(5);
-    M3_driver->toff(5);
-    M4_driver->toff(5);
+    M1_driver->enableAutomaticCurrentScaling();
+    M2_driver->enableAutomaticCurrentScaling();
+    M3_driver->enableAutomaticCurrentScaling();
+    M4_driver->enableAutomaticCurrentScaling();
 
+    M1_driver->enableAutomaticGradientAdaptation();
+    M2_driver->enableAutomaticGradientAdaptation();
+    M3_driver->enableAutomaticGradientAdaptation();
+    M4_driver->enableAutomaticGradientAdaptation();
+    
     set_RMS(M_DRIVE_CURRENT_MA);
     set_microstep(M_DRIVE_MICROSTEP);
+
+    M1_driver->enable();
+    M2_driver->enable();
+    M3_driver->enable();
+    M4_driver->enable();
 
     _stepper_engine.init();
     _M1_stepper = _stepper_engine.stepperConnectToPin(M1_STP_PIN);
@@ -301,18 +314,18 @@ bool Motion::is_running()
 
 void Motion::set_RMS(uint16_t current)
 {
-    M1_driver->rms_current(current);
-    M2_driver->rms_current(current);
-    M3_driver->rms_current(current);
-    M4_driver->rms_current(current);
+    M1_driver->setRMSCurrent(current, M_R_SENSE);
+    M2_driver->setRMSCurrent(current, M_R_SENSE);
+    M3_driver->setRMSCurrent(current, M_R_SENSE);
+    M4_driver->setRMSCurrent(current, M_R_SENSE);
 }
 
 void Motion::set_microstep(uint16_t ms)
 {
-    M1_driver->microsteps(ms);
-    M2_driver->microsteps(ms);
-    M3_driver->microsteps(ms);
-    M4_driver->microsteps(ms);
+    M1_driver->setMicrostepsPerStep(ms);
+    M2_driver->setMicrostepsPerStep(ms);
+    M3_driver->setMicrostepsPerStep(ms);
+    M4_driver->setMicrostepsPerStep(ms);
 }
 
 void Motion::translate(int distance, double alpha, int speed_robot, int accel_robot, bool blocking)

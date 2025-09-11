@@ -4,9 +4,9 @@
 [submodule "components/TM1638plus/TM1638plus"]
 	path = components/TM1638plus/TM1638plus
 	url = https://github.com/gavinlyonsrepo/TM1638plus
-[submodule "components/TMCStepper/TMCStepper"]
-	path = components/TMCStepper/TMCStepper
-	url = https://github.com/teemuatlut/TMCStepper
 [submodule "components/LedcStepper"]
 	path = components/LedcStepper
 	url = https://github.com/vale075/LedcStepper
+[submodule "components/TMC2209"]
+	path = components/TMC2209
+	url = https://github.com/janelia-arduino/TMC2209
