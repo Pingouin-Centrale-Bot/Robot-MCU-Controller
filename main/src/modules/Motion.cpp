@@ -29,7 +29,7 @@ Motion::Motion()
     M2_driver->enableAutomaticGradientAdaptation();
     M3_driver->enableAutomaticGradientAdaptation();
     M4_driver->enableAutomaticGradientAdaptation();
-    
+
     set_RMS(M_DRIVE_CURRENT_MA);
     set_microstep(M_DRIVE_MICROSTEP);
 
@@ -76,7 +76,8 @@ void Motion::disable_motors()
 
 void Motion::enable_motors()
 {
-    gpio_set_level(_en_pin, 0);
+    if (!emergency_stopped)
+        gpio_set_level(_en_pin, 0);
 }
 
 void Motion::calibrate(IHM *ihm)
@@ -128,17 +129,16 @@ void Motion::set_pos(position_t absolute_pos)
     _pos = absolute_pos;
 }
 
-void Motion::runSpeedInHz(int32_t speed_in_Hz, FastAccelStepper *stepper) {
+void Motion::runSpeedInHz(uint32_t speed_in_Hz, FastAccelStepper *stepper, bool dir) {
     if (speed_in_Hz == 0) {
          stepper->stopMove();
     }
     else {
-         if (speed_in_Hz > 0) {
-              stepper->setSpeedInHz(speed_in_Hz);
+        stepper->setSpeedInHz(speed_in_Hz);
+         if (dir) {
               stepper->runForward();
          }
          else {
-              stepper->setSpeedInHz(-speed_in_Hz);
               stepper->runBackward();
          }
     }
@@ -177,10 +177,10 @@ void Motion::execute_speed(double c1, double c2, double c3, double c4, int speed
     UBaseType_t prvPriority = uxTaskPriorityGet(NULL);
     vTaskPrioritySet(NULL, PRIORITY_SYNC_MOTORS);
     _moved = true;
-    runSpeedInHz(_current_objective[0].speed, _M1_stepper);
-    runSpeedInHz(_current_objective[1].speed, _M2_stepper);
-    runSpeedInHz(_current_objective[2].speed, _M3_stepper);
-    runSpeedInHz(_current_objective[3].speed, _M4_stepper);
+    runSpeedInHz(_current_objective[0].speed, _M1_stepper, c1 > 0);
+    runSpeedInHz(_current_objective[1].speed, _M2_stepper, c2 > 0);
+    runSpeedInHz(_current_objective[2].speed, _M3_stepper, c3 > 0);
+    runSpeedInHz(_current_objective[3].speed, _M4_stepper, c4 > 0);
     vTaskPrioritySet(NULL, prvPriority);
     xSemaphoreGive(_stepping_mutex);
 }

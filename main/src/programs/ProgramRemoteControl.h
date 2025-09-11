@@ -4,6 +4,7 @@
 #include "modules/Lift.h"
 #include "modules/IHM.h"
 #include "modules/Lidar.h"
+#include "modules/Battery.h"
 #include "modules/RemoteControl.h"
 
 class ProgramRemoteControl : public ProgramBase {
@@ -19,5 +20,6 @@ private:
     Lift* liftD;
     IHM* ihm;
     Lidar* lidar;
+    Battery* battery;
     RemoteControl *rc;
 };

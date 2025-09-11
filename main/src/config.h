@@ -2,6 +2,8 @@
 
 #include <TMC2209.h>
 
+extern bool emergency_stopped;
+
 #define M_R_SENSE 0.11f
 
 #define M_DRIVE_EN_PIN 15 // Enable is common to all four drive motors
@@ -70,7 +72,9 @@
 #define TIRETTE_PIN 21
 
 #define V_BATT_PIN 1
+#define V_BATT_RATIO 7.6666666f
 
+#define PRIORITY_BATTERY_MONITOR tskIDLE_PRIORITY + 3
 #define PRIORITY_LIFT_STEPPERS tskIDLE_PRIORITY + 4
 #define PRIORITY_CAL_LIFT tskIDLE_PRIORITY + 5
 #define PRIORITY_LD19P tskIDLE_PRIORITY + 6
@@ -95,8 +99,8 @@
 #define NUMBER_OF_BEACONS_MAX 20
 
 // Motion
-#define MAX_SPEED_ROBOT 100 // mm/s
-#define MAX_ACCEL_ROBOT 100 // mm/s^2
+#define MAX_SPEED_ROBOT 500 // mm/s
+#define MAX_ACCEL_ROBOT 500 // mm/s^2
 #define JERK_MOTORS 10      // Duration in steps of Linear accel
 
 #define ODOM_CORRECTION_TRANSLATION 1.045 // (100, 100) 1.041

@@ -28,13 +28,15 @@ struct uni_platform *get_robot_platform()
 Motion *RemoteControl::_motion = nullptr;
 Lift *RemoteControl::_lift_left = nullptr;
 Lift *RemoteControl::_lift_right = nullptr;
+Battery *RemoteControl::_battery = nullptr;
 
-RemoteControl::RemoteControl(Motion *motion, Lift *lift_left, Lift *lift_right)
+RemoteControl::RemoteControl(Motion *motion, Lift *lift_left, Lift *lift_right, Battery *battery)
 {
     ESP_LOGI(TAG, "Creating");
     _motion = motion;
     _lift_left = lift_left;
     _lift_right = lift_right;
+    _battery = battery;
 
     btstack_init();
 
@@ -115,124 +117,160 @@ void RemoteControl::platform_controller_data(uni_hid_device_t *d, uni_controller
 {
     static uni_controller_t prev = {};
     uni_gamepad_t *gp;
+    static float x = 0;
+    static float y = 0;
 
     // Optimization to avoid processing the previous data so that the console
     // does not get spammed with a lot of logs, but remove it from your project.
-    if (memcmp(&prev, ctl, sizeof(*ctl)) == 0)
+    if (memcmp(&prev, ctl, sizeof(*ctl)))
     {
-        return;
-    }
 
-    gp = &ctl->gamepad;
-    ESP_LOGI(TAG, "btns: %d; ax_x: %" PRId32 "; ax_y: %" PRId32 "; brake: %" PRId32 "; throttle: %" PRId32 ";", gp->buttons, gp->axis_x, gp->axis_y, gp->brake, gp->throttle);
+        gp = &ctl->gamepad;
+        ESP_LOGI(TAG, "btns: %d; ax_x: %" PRId32 "; ax_y: %" PRId32 "; brake: %" PRId32 "; throttle: %" PRId32 ";", gp->buttons, gp->axis_x, gp->axis_y, gp->brake, gp->throttle);
 
-    // lift right controls
-    if ((gp->buttons & BUTTON_B) && !(prev.gamepad.buttons & BUTTON_B)) // btn_b just got pressed
-    {
-        if (_lift_right->magnets_enabled())
+        // lift right controls
+        if ((gp->buttons & BUTTON_B) && !(prev.gamepad.buttons & BUTTON_B)) // btn_b just got pressed
         {
-            _lift_right->disable_magnets();
-            // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 50 /* duration ms */, 0 /* weak magnitude */,
-            //                                   50 /* strong magnitude */);
-            xboxone_play_quad_rumble(d, 0, 50, 0, 255, 50, 20);
+            if (_lift_right->magnets_enabled())
+            {
+                _lift_right->disable_magnets();
+                // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 50 /* duration ms */, 0 /* weak magnitude */,
+                //                                   50 /* strong magnitude */);
+                xboxone_play_quad_rumble(d, 0, 50, 0, 255, 50, 20);
+            }
+            else
+            {
+                _lift_right->enable_magnets();
+                // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 150 /* duration ms */, 0 /* weak magnitude */,
+                //                                   100 /* strong magnitude */);
+                xboxone_play_quad_rumble(d, 0, 150, 0, 255, 25, 10);
+            }
+        }
+        if ((gp->buttons & BUTTON_SHOULDER_R) && !(prev.gamepad.buttons & BUTTON_SHOULDER_R)) // shoulder_r just got pressed
+        {
+            if (_lift_right->suction_enabled())
+            {
+                _lift_right->disable_suction();
+            }
+            else
+            {
+                _lift_right->enable_suction();
+            }
+        }
+        if ((gp->buttons & BUTTON_Y) != (prev.gamepad.buttons & BUTTON_Y)) // btn_y changed state
+        {
+            if ((gp->buttons & BUTTON_Y) && !(gp->buttons & BUTTON_A)) // btn_y got pressed while btn_a not pressed
+            {
+                _lift_right->go_to(lift_max_h, false);
+            }
+            else if (!(gp->buttons & BUTTON_Y)) // btn_y lifted
+            {
+                _lift_right->stop_motor();
+            }
+        }
+        if ((gp->buttons & BUTTON_A) != (prev.gamepad.buttons & BUTTON_A)) // btn_a changed state
+        {
+            if ((gp->buttons & BUTTON_A) && !(gp->buttons & BUTTON_Y)) // btn_a got pressed while btn_y not pressed
+            {
+                _lift_right->go_to(lift_min_h, false);
+            }
+            else if (!(gp->buttons & BUTTON_A)) // btn_a lifted
+            {
+                _lift_right->stop_motor();
+            }
+        }
+
+        // lift left controls
+        if ((gp->buttons & BUTTON_X) && !(prev.gamepad.buttons & BUTTON_X)) // btn_x just got pressed
+        {
+            if (_lift_left->magnets_enabled())
+            {
+                _lift_left->disable_magnets();
+                // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 50 /* duration ms */, 100 /* weak magnitude */,
+                //                                   50 /* strong magnitude */);
+                xboxone_play_quad_rumble(d, 0, 50, 255, 0, 50, 20);
+            }
+            else
+            {
+                _lift_left->enable_magnets();
+                // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 150 /* duration ms */, 200 /* weak magnitude */,
+                //                                   100 /* strong magnitude */);
+                xboxone_play_quad_rumble(d, 0, 150, 255, 0, 25, 10);
+            }
+        }
+        if ((gp->buttons & BUTTON_SHOULDER_L) && !(prev.gamepad.buttons & BUTTON_SHOULDER_L)) // shoulder_l just got pressed
+        {
+            if (_lift_left->suction_enabled())
+            {
+                _lift_left->disable_suction();
+            }
+            else
+            {
+                _lift_left->enable_suction();
+            }
+        }
+        if ((gp->dpad & DPAD_UP) != (prev.gamepad.dpad & DPAD_UP)) // dpad_up changed state
+        {
+            if ((gp->dpad & DPAD_UP) && !(gp->dpad & DPAD_DOWN)) // dpad_up got pressed while dpad_down not pressed
+            {
+                _lift_left->go_to(lift_max_h, false);
+            }
+            else if (!(gp->dpad & DPAD_UP)) // dpad_up lifted
+            {
+                _lift_left->stop_motor();
+            }
+        }
+        if ((gp->dpad & DPAD_DOWN) != (prev.gamepad.dpad & DPAD_DOWN)) // dpad_down changed state
+        {
+            if ((gp->dpad & DPAD_DOWN) && !(gp->dpad & DPAD_UP)) // dpad_down got pressed while dpad_up not pressed
+            {
+                _lift_left->go_to(lift_min_h, false);
+            }
+            else if (!(gp->dpad & DPAD_DOWN)) // dpad_down lifted
+            {
+                _lift_left->stop_motor();
+            }
+        }
+        if (abs(gp->axis_x) > 30)
+        {
+            x = gp->axis_x / 512.0f;
         }
         else
         {
-            _lift_right->enable_magnets();
-            // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 150 /* duration ms */, 0 /* weak magnitude */,
-            //                                   100 /* strong magnitude */);
-            xboxone_play_quad_rumble(d, 0, 150, 0, 255, 25, 10);
+            x = 0;
         }
-    }
-    if ((gp->buttons & BUTTON_SHOULDER_R) && !(prev.gamepad.buttons & BUTTON_SHOULDER_R)) // shoulder_r just got pressed
-    {
-        if (_lift_right->suction_enabled())
+        if (abs(gp->axis_y) > 30)
         {
-            _lift_right->disable_suction();
+            y = gp->axis_y / 512.0f;
         }
         else
         {
-            _lift_right->enable_suction();
+            y = 0;
         }
+        prev = *ctl;
     }
-    if ((gp->buttons & BUTTON_Y) != (prev.gamepad.buttons & BUTTON_Y)) // btn_y changed state
+    static int64_t _last_time = 0;
+    if (esp_timer_get_time() - _last_time > 50000)
     {
-        if ((gp->buttons & BUTTON_Y) && !(gp->buttons & BUTTON_A)) // btn_y got pressed while btn_a not pressed
-        {
-            _lift_right->go_to(lift_max_h, false);
-        }
-        else if (!(gp->buttons & BUTTON_Y)) // btn_y lifted
-        {
-            _lift_right->stop_motor();
-        }
+        _last_time = esp_timer_get_time();
+        double angle = std::atan2(y, x);
+        angle = ((angle * 180.0 / M_PI) + 270);
+        if (angle > 360) angle -= 360;
+        _motion->translate_velocity(angle, static_cast<int>(std::sqrt(x * x + y * y) * static_cast<float>(MAX_SPEED_ROBOT) + 0.5));
     }
-    if ((gp->buttons & BUTTON_A) != (prev.gamepad.buttons & BUTTON_A)) // btn_a changed state
-    {
-        if ((gp->buttons & BUTTON_A) && !(gp->buttons & BUTTON_Y)) // btn_a got pressed while btn_y not pressed
-        {
-            _lift_right->go_to(lift_min_h, false);
-        }
-        else if (!(gp->buttons & BUTTON_A)) // btn_a lifted
-        {
-            _lift_right->stop_motor();
-        }
-    }
-
-    // lift left controls
-    if ((gp->buttons & BUTTON_X) && !(prev.gamepad.buttons & BUTTON_X)) // btn_x just got pressed
-    {
-        if (_lift_left->magnets_enabled())
-        {
-            _lift_left->disable_magnets();
-            // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 50 /* duration ms */, 100 /* weak magnitude */,
-            //                                   50 /* strong magnitude */);
-            xboxone_play_quad_rumble(d, 0, 50, 255, 0, 50, 20);
-        }
-        else
-        {
-            _lift_left->enable_magnets();
-            // d->report_parser.play_dual_rumble(d, 0 /* delayed start ms */, 150 /* duration ms */, 200 /* weak magnitude */,
-            //                                   100 /* strong magnitude */);
-            xboxone_play_quad_rumble(d, 0, 150, 255, 0, 25, 10);
-        }
-    }
-    if ((gp->buttons & BUTTON_SHOULDER_L) && !(prev.gamepad.buttons & BUTTON_SHOULDER_L)) // shoulder_l just got pressed
-    {
-        if (_lift_left->suction_enabled())
-        {
-            _lift_left->disable_suction();
-        }
-        else
-        {
-            _lift_left->enable_suction();
-        }
-    }
-    if ((gp->dpad & DPAD_UP) != (prev.gamepad.dpad & DPAD_UP)) // dpad_up changed state
-    {
-        if ((gp->dpad & DPAD_UP) && !(gp->dpad & DPAD_DOWN)) // dpad_up got pressed while dpad_down not pressed
-        {
-            _lift_left->go_to(lift_max_h, false);
-        }
-        else if (!(gp->dpad & DPAD_UP)) // dpad_up lifted
-        {
-            _lift_left->stop_motor();
-        }
-    }
-    if ((gp->dpad & DPAD_DOWN) != (prev.gamepad.dpad & DPAD_DOWN)) // dpad_down changed state
-    {
-        if ((gp->dpad & DPAD_DOWN) && !(gp->dpad & DPAD_UP)) // dpad_down got pressed while dpad_up not pressed
-        {
-            _lift_left->go_to(lift_min_h, false);
-        }
-        else if (!(gp->dpad & DPAD_DOWN)) // dpad_down lifted
-        {
-            _lift_left->stop_motor();
-        }
-    }
-
-    prev = *ctl;
 }
 
 void RemoteControl::platform_oob_event(uni_platform_oob_event_t event, void *data)
 {
+    switch (event)
+    {
+    case UNI_PLATFORM_OOB_GAMEPAD_SYSTEM_BUTTON:
+    {
+        _battery->emergency_stop();
+        break;
+    }
+
+    default:
+        break;
+    }
 }

@@ -1,6 +1,5 @@
 #include "Lift.h"
 
-
 Lift::Lift(uint8_t step_pin, uint8_t dir_pin, uint8_t en_pin, uint8_t suction_pin, uint8_t magnet_pin, uint8_t microsteps, TMC2209::SerialAddress uart_adress, const char *tag)
 {
     _tag = tag;
@@ -32,7 +31,13 @@ Lift::Lift(uint8_t step_pin, uint8_t dir_pin, uint8_t en_pin, uint8_t suction_pi
 
 void Lift::enable_motor()
 {
-    _stepper->enable();
+    if (!emergency_stopped)
+        _stepper->enable();
+}
+
+void Lift::disable_motor()
+{
+    _stepper->disable();
 }
 
 void Lift::disable_suction()

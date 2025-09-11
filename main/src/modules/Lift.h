@@ -12,6 +12,7 @@ class Lift
 public:
     Lift(uint8_t step_pin, uint8_t dir_pin, uint8_t en_pin, uint8_t suction_pin, uint8_t magnet_pin, uint8_t microsteps, TMC2209::SerialAddress uart_adress, const char *tag);
     void enable_motor();
+    void disable_motor();
     void disable_suction();
     void enable_suction();
     void disable_magnets();

@@ -2,13 +2,14 @@
 
 #include "Motion.h"
 #include "Lift.h"
+#include "Battery.h"
 
 #include <uni.h>
 
 class RemoteControl
 {
 public:
-    RemoteControl(Motion *motion, Lift *lift_left, Lift *lift_right);
+    RemoteControl(Motion *motion, Lift *lift_left, Lift *lift_right, Battery *battery);
     static void trigger_event_on_gamepad(uni_hid_device_t* d);
     static void start();
 
@@ -16,6 +17,7 @@ private:
     static Motion *_motion;
     static Lift *_lift_left;
     static Lift *_lift_right;
+    static Battery *_battery;
 
     typedef struct platform_instance_s {
         uni_gamepad_seat_t gamepad_seat;  // which "seat" is being used

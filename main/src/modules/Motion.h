@@ -48,7 +48,7 @@ private:
     void execute_moves(double c1, double c2, double c3, double c4, int pos, int speed, int accel, bool blocking = true);
     void execute_speed(double c1, double c2, double c3, double c4, int speed, int accel);
     void execute_steps();
-    void runSpeedInHz(int32_t speed_in_Hz, FastAccelStepper *stepper);
+    void runSpeedInHz(uint32_t speed_in_Hz, FastAccelStepper *stepper, bool dir);
     FastAccelStepper *_M1_stepper = NULL;
     FastAccelStepper *_M2_stepper = NULL;
     FastAccelStepper *_M3_stepper = NULL;

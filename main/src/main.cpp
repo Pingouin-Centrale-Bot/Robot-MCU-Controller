@@ -20,6 +20,8 @@
 
 static const char *TAG = "main";
 
+bool emergency_stopped = false;
+
 void waitTiretteAndStart();
 void calibrage();
 int select_program();
