@@ -1,31 +1,33 @@
 #pragma once
 
+#include <TMC2209.h>
+
 #define M_R_SENSE 0.11f
 
 #define M_DRIVE_EN_PIN 15 // Enable is common to all four drive motors
 #define M_DRIVE_RX 18               // For setting TMC2209 parameters
 #define M_DRIVE_TX 17               // For setting TMC2209 parameters
 #define M_DRIVE_SERIAL Serial1 // For setting TMC2209 parameters
-#define M_DRIVE_CURRENT_MA 500
+#define M_DRIVE_CURRENT_MA 1000
 #define M_DRIVE_STEPS_PER_TURN 200 // good
 #define M_DRIVE_MICROSTEP 32       // default motor microstep
 
-#define M1_DRIVER_ADDRESS 0b00
+#define M1_DRIVER_ADDRESS TMC2209::SERIAL_ADDRESS_0
 #define M1_DIR_PIN 4
 #define M1_STP_PIN 5
 #define M1_MICROSTEP M_DRIVE_MICROSTEP //32 // 8 for TMC2209 // 8->32 16->16 64->128 32->64 wut ???
 
-#define M2_DRIVER_ADDRESS 0b01
+#define M2_DRIVER_ADDRESS TMC2209::SERIAL_ADDRESS_1
 #define M2_DIR_PIN 6
 #define M2_STP_PIN 7
 #define M2_MICROSTEP M_DRIVE_MICROSTEP //64 // 32 for TMC2209
 
-#define M3_DRIVER_ADDRESS 0b10
+#define M3_DRIVER_ADDRESS TMC2209::SERIAL_ADDRESS_2
 #define M3_DIR_PIN 8
 #define M3_STP_PIN 3
 #define M3_MICROSTEP M_DRIVE_MICROSTEP //128 // 64 for TMC2209
 
-#define M4_DRIVER_ADDRESS 0b11
+#define M4_DRIVER_ADDRESS TMC2209::SERIAL_ADDRESS_3
 #define M4_DIR_PIN 9
 #define M4_STP_PIN 10
 #define M4_MICROSTEP M_DRIVE_MICROSTEP //16 // 16 for TMC2209
@@ -42,12 +44,12 @@
 #define M_CHARIOT_SPEED_MM 20
 #define M_CHARIOT_CAL_SPEED 10
 
-#define M5_DRIVER_ADDRESS 0b00
+#define M5_DRIVER_ADDRESS TMC2209::SERIAL_ADDRESS_0
 #define M5_DIR_PIN 11
 #define M5_STP_PIN 12
 #define M5_MICROSTEP 8 // for TMC2208 //32 for fake 2209
 
-#define M6_DRIVER_ADDRESS 0b10
+#define M6_DRIVER_ADDRESS TMC2209::SERIAL_ADDRESS_2
 #define M6_DIR_PIN 13
 #define M6_STP_PIN 14
 #define M6_MICROSTEP 4 // for TMC2208 //128 for fake 2209
@@ -99,3 +101,6 @@
 
 #define ODOM_CORRECTION_TRANSLATION 1.045 // (100, 100) 1.041
 #define ODOM_CORRECTION_ROTATION 1.012    //
+
+// Bluetooth controller
+#define BT_CONTROLLER_ADRESS "5C:BA:37:8B:B7:C6"
